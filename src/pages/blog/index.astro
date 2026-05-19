@@ -1,0 +1,19 @@
+---
+import { getCollection } from "astro:content";
+import PostPreview from "../../components/PostPreview.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title="Blog" description="All posts from Triet Minh.">
+  <section class="stack">
+    <h1>Blog</h1>
+    <p class="lede">Essays, dev notes, and short field reports.</p>
+    <ul class="post-list">
+      {posts.map((post) => <PostPreview post={post} />)}
+    </ul>
+  </section>
+</BaseLayout>

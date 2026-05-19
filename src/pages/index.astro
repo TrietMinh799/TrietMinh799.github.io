@@ -1,0 +1,26 @@
+---
+import { getCollection } from "astro:content";
+import PostPreview from "../components/PostPreview.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout>
+  <section class="stack" aria-labelledby="intro-title">
+    <h1 id="intro-title">A quiet place for sharp notes.</h1>
+    <p class="lede">
+      Personal writing by Triet Minh about software, learning, and the small
+      decisions that make work feel thoughtful.
+    </p>
+  </section>
+
+  <section class="section stack" aria-labelledby="latest-title">
+    <h2 id="latest-title">Latest</h2>
+    <ul class="post-list">
+      {posts.map((post) => <PostPreview post={post} />)}
+    </ul>
+  </section>
+</BaseLayout>
