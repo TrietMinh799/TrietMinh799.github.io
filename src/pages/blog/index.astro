@@ -11,7 +11,7 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
 <BaseLayout title="Blog" description="All posts from Triet Minh.">
   <section class="stack">
     <h1>Blog</h1>
-    <p class="lede">Essays, dev notes, and short field reports.</p>
+    <p class="lede">Bài viết: </p>
     <ul class="post-list">
       {posts.map((post) => <PostPreview post={post} />)}
     </ul>
