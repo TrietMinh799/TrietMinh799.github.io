@@ -21,11 +21,11 @@ const formattedDate = post.data.pubDate.toLocaleDateString("en", {
   <p>{post.data.description}</p>
   {
     post.data.tags.length > 0 && (
-      <div class="tags" aria-label="Post tags">
+      <ul class="tags" aria-label="Post tags">
         {post.data.tags.map((tag) => (
-          <span class="tag">{tag}</span>
+          <li class="tag">{tag}</li>
         ))}
-      </div>
+      </ul>
     )
   }
 </li>
