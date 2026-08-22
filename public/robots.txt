@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://trietminh799.github.io/sitemap.xml
+Sitemap: https://trietminh799.github.io/sitemap-index.xml

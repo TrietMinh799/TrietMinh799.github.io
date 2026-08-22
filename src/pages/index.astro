@@ -8,7 +8,10 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .slice(0, 4);
 ---
 
-<BaseLayout>
+<BaseLayout
+  title="Triet Minh - Kho lưu trữ vụn vặt & chia sẻ công nghệ"
+  description="Blog cá nhân của Triết Minh về lập trình web, thuật toán giải đố, thiết bị nhúng IoT ESP32 và trải nghiệm đời sống sinh viên."
+>
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="hero-badge">

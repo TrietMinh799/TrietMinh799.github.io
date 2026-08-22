@@ -40,7 +40,16 @@ const updatedDateFormatted = post.data.updatedDate
 const readingTime = getReadingTime(post.body || "");
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  type="article"
+  pubDate={post.data.pubDate}
+  updatedDate={post.data.updatedDate}
+  tags={post.data.tags}
+  image={post.data.image}
+  author={post.data.author}
+>
   <article class="post-layout">
     <div class="post-navigation-top">
       <a href="/blog/" class="back-link">
