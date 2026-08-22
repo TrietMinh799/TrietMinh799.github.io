@@ -6,14 +6,210 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+// Collect unique tags with counts
+const tagCounts: Record<string, number> = {};
+posts.forEach((post) => {
+  if (post.data.tags) {
+    post.data.tags.forEach((tag) => {
+      if (tag && tag.trim()) {
+        const t = tag.trim();
+        tagCounts[t] = (tagCounts[t] || 0) + 1;
+      }
+    });
+  }
+});
+
+const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
 ---
 
-<BaseLayout title="Blog" description="All posts from Triet Minh.">
-  <section class="stack">
-    <h1>Blog</h1>
-    <p class="lede">Bài viết: </p>
-    <ul class="post-list">
-      {posts.map((post) => <PostPreview post={post} />)}
+<BaseLayout title="Blog" description="Tất cả bài viết và ghi chú của Triết Minh.">
+  <section class="blog-section stack">
+    <header class="blog-header">
+      <h1>Bài viết</h1>
+      <p class="lede">Nơi lưu trữ những chia sẻ, kinh nghiệm lập trình và trải nghiệm đời sống.</p>
+    </header>
+
+    {
+      allTags.length > 0 && (
+        <div class="tags-filter-container">
+          <span class="filter-title">Lọc theo chủ đề:</span>
+          <div class="tag-filter-list" role="tablist">
+            <button
+              type="button"
+              class="filter-tag-btn active"
+              data-tag="all"
+            >
+              Tất cả ({posts.length})
+            </button>
+            {allTags.map(([tag, count]) => (
+              <button
+                type="button"
+                class="filter-tag-btn"
+                data-tag={tag}
+              >
+                #{tag} ({count})
+              </button>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <ul class="post-list" id="post-list">
+      {
+        posts.map((post) => (
+          <div class="post-item-wrapper" data-tags={JSON.stringify(post.data.tags || [])}>
+            <PostPreview post={post} />
+          </div>
+        ))
+      }
     </ul>
+
+    <div id="no-posts-msg" class="no-posts" style="display: none;">
+      <p>Không có bài viết nào với chủ đề này.</p>
+    </div>
   </section>
 </BaseLayout>
+
+<script>
+  function setupTagFilter() {
+    const filterButtons = document.querySelectorAll<HTMLButtonElement>(".filter-tag-btn");
+    const postItems = document.querySelectorAll<HTMLElement>(".post-item-wrapper");
+    const noPostsMsg = document.getElementById("no-posts-msg");
+
+    function applyFilter(selectedTag: string) {
+      let visibleCount = 0;
+
+      filterButtons.forEach((btn) => {
+        if (btn.dataset.tag === selectedTag) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+
+      postItems.forEach((item) => {
+        try {
+          const tags: string[] = JSON.parse(item.dataset.tags || "[]");
+          if (selectedTag === "all" || tags.includes(selectedTag)) {
+            item.style.display = "block";
+            visibleCount++;
+          } else {
+            item.style.display = "none";
+          }
+        } catch {
+          item.style.display = "block";
+          visibleCount++;
+        }
+      });
+
+      if (noPostsMsg) {
+        noPostsMsg.style.display = visibleCount === 0 ? "block" : "none";
+      }
+
+      // Update URL query param without reload
+      const url = new URL(window.location.href);
+      if (selectedTag === "all") {
+        url.searchParams.delete("tag");
+      } else {
+        url.searchParams.set("tag", selectedTag);
+      }
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tag = btn.dataset.tag || "all";
+        applyFilter(tag);
+      });
+    });
+
+    // Check URL params on initial load
+    const params = new URLSearchParams(window.location.search);
+    const urlTag = params.get("tag");
+    if (urlTag) {
+      applyFilter(urlTag);
+    }
+  }
+
+  setupTagFilter();
+  document.addEventListener("astro:page-load", setupTagFilter);
+</script>
+
+<style>
+  .blog-section {
+    gap: 2rem;
+  }
+
+  .blog-header {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .tags-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  .filter-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .tag-filter-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .filter-tag-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .filter-tag-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .filter-tag-btn.active {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .post-list {
+    display: grid;
+    gap: 1.25rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .post-item-wrapper {
+    list-style: none;
+  }
+
+  .no-posts {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--muted);
+  }
+</style>

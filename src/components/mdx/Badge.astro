@@ -1,0 +1,98 @@
+---
+interface Props {
+  variant?: "default" | "accent" | "success" | "warning" | "danger" | "info";
+  size?: "sm" | "md";
+}
+
+const { variant = "default", size = "sm" } = Astro.props;
+---
+
+<span class={`badge badge-${variant} badge-${size}`}>
+  <slot />
+</span>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 500;
+    line-height: 1;
+    border-radius: 999px;
+    vertical-align: middle;
+    letter-spacing: 0.01em;
+  }
+
+  .badge-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+  }
+
+  .badge-md {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .badge-default {
+    background: var(--accent-soft);
+    color: var(--text);
+    border: 1px solid var(--line);
+  }
+
+  .badge-accent {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  .badge-success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  .badge-warning {
+    background: rgba(234, 179, 8, 0.15);
+    color: #b45309;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+  }
+
+  .badge-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .badge-info {
+    background: rgba(14, 165, 233, 0.15);
+    color: #0284c7;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+  }
+
+  :global([data-theme="dark"]) .badge-success {
+    color: #86efac;
+  }
+  :global([data-theme="dark"]) .badge-warning {
+    color: #fde047;
+  }
+  :global([data-theme="dark"]) .badge-danger {
+    color: #fca5a5;
+  }
+  :global([data-theme="dark"]) .badge-info {
+    color: #7dd3fc;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .badge-success {
+      color: #86efac;
+    }
+    :global(:root:not([data-theme="light"])) .badge-warning {
+      color: #fde047;
+    }
+    :global(:root:not([data-theme="light"])) .badge-danger {
+      color: #fca5a5;
+    }
+    :global(:root:not([data-theme="light"])) .badge-info {
+      color: #7dd3fc;
+    }
+  }
+</style>

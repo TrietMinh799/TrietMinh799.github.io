@@ -2,18 +2,158 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout title="About" description="About Triet Minh and this blog.">
-  <article class="stack prose">
-    <h1>About</h1>
-    <p class="lede">
-        Chào mọi người, mình là Triết
-    </p>
-    <p>
-        - {new Date().getFullYear() - 2007} tuổi
-        <br />
-        - Hiện tại là sinh viên học tại trường đại học <a href="https://vgu.edu.vn/">Việt Đức</a>
-        <br />
-        - Đây là trang cá nhân nơi mình viết và đăng những thứ vụn vặt trong ngày :>
-    </p>
+<BaseLayout title="About" description="Giới thiệu về Triết Minh và trang web cá nhân.">
+  <article class="about-page stack">
+    <header class="about-header">
+      <h1>About Me</h1>
+      <p class="lede">
+        Chào mọi người, mình là <strong>Triết Minh</strong> (Triết) 👋
+      </p>
+    </header>
+
+    <div class="profile-card">
+      <div class="profile-info">
+        <h2 class="profile-name">Triết Minh</h2>
+        <p class="profile-tagline">Sinh viên Công nghệ thông tin @ Đại học Việt Đức (VGU)</p>
+        
+        <ul class="quick-facts">
+          <li>
+            <strong>Tuổi:</strong> {new Date().getFullYear() - 2007}
+          </li>
+          <li>
+            <strong>Trường:</strong> <a href="https://vgu.edu.vn/" target="_blank" rel="noopener noreferrer">Đại học Việt Đức (VGU)</a>
+          </li>
+          <li>
+            <strong>Sở thích:</strong> Lập trình Web, Thuật toán, DIY & Thiết bị nhúng (ESP32 / Arduino), Game giải đố (Sudoku, Wordle).
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <section class="about-content prose">
+      <h2>Về trang web này</h2>
+      <p>
+        Đây là không gian số cá nhân nơi mình lưu trữ những điều thú vị học được trong quá trình học tập và làm việc. Từ những giải thuật như quay lui (Backtracking) để giải Sudoku, các kinh nghiệm vọc vạch phần cứng IoT với ESP32, cho đến những cảm xúc và trải nghiệm đời sống sinh viên thường nhật.
+      </p>
+
+      <h2>Công nghệ & Công cụ thường dùng</h2>
+      <div class="tech-stack-grid">
+        <div class="tech-category">
+          <h3>Frontend & Web</h3>
+          <ul class="tag-cloud">
+            <li class="tag">Astro</li>
+            <li class="tag">TypeScript</li>
+            <li class="tag">React</li>
+            <li class="tag">Vite</li>
+            <li class="tag">HTML/CSS</li>
+          </ul>
+        </div>
+        <div class="tech-category">
+          <h3>Hệ thống & Ngôn ngữ</h3>
+          <ul class="tag-cloud">
+            <li class="tag">C / C++</li>
+            <li class="tag">Python</li>
+            <li class="tag">Git & GitHub</li>
+            <li class="tag">ESP32 / Arduino</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Liên hệ & Kết nối</h2>
+      <p>
+        Nếu bạn muốn trao đổi về lập trình, góp ý cho trang web hay đơn giản là kết nối trò chuyện:
+      </p>
+      <ul>
+        <li>
+          <strong>GitHub:</strong> <a href="https://github.com/TrietMinh799" target="_blank" rel="noopener noreferrer">@TrietMinh799</a>
+        </li>
+        <li>
+          <strong>Website:</strong> <a href="https://trietminh799.github.io">trietminh799.github.io</a>
+        </li>
+      </ul>
+    </section>
   </article>
 </BaseLayout>
+
+<style>
+  .about-page {
+    max-width: 760px;
+    margin: 0 auto;
+    gap: 2rem;
+  }
+
+  .about-header {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .profile-card {
+    padding: 1.5rem 1.75rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .profile-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .profile-tagline {
+    font-size: 0.95rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin: 0.25rem 0 1rem 0;
+  }
+
+  .quick-facts {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .quick-facts strong {
+    color: var(--text);
+  }
+
+  .tech-stack-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .tech-category {
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+  }
+
+  .tech-category h3 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem 0;
+    color: var(--accent);
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  @media (max-width: 600px) {
+    .tech-stack-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

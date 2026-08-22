@@ -1,0 +1,23 @@
+---
+interface Props {
+  label: string;
+  default?: boolean;
+}
+
+const { label, default: isDefault = false } = Astro.props;
+---
+
+<div class="tab-panel" data-tab-label={label} data-default={isDefault ? "true" : undefined} role="tabpanel">
+  <slot />
+</div>
+
+<style>
+  .tab-panel {
+    display: none;
+    padding-top: 1rem;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+</style>

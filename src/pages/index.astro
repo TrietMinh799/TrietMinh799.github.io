@@ -5,21 +5,157 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 3);
+  .slice(0, 4);
 ---
 
 <BaseLayout>
-  <section class="stack" aria-labelledby="intro-title">
-    <h1 id="intro-title">Kho lưu trữ vụn vặt</h1>
-    <p class="lede">
-      Đăng những thứ đời sống, bông đùa và chả biết nữa
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      <span>Chào mừng bạn đến với blog của mình</span>
+    </div>
+    <h1 class="hero-title">Kho lưu trữ vụn vặt & chia sẻ công nghệ</h1>
+    <p class="hero-description">
+      Mình là <strong>Triết Minh</strong>. Đây là không gian nhỏ nơi mình ghi lại những câu chuyện đời sống thường nhật, các dự án lập trình web, thuật toán, và những trải nghiệm DIY thú vị.
     </p>
+
+    <div class="hero-actions">
+      <a href="/blog/" class="btn btn-primary">
+        Khám phá bài viết
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <a href="/tools" class="btn btn-secondary">
+        Little Tools
+      </a>
+    </div>
   </section>
 
+  <!-- Latest Posts Section -->
   <section class="section stack" aria-labelledby="latest-title">
-    <h2 id="latest-title">Latest</h2>
+    <div class="section-header">
+      <h2 id="latest-title">Bài viết mới nhất</h2>
+      <a href="/blog/" class="view-all-link">
+        Xem tất cả ({posts.length}+) →
+      </a>
+    </div>
+
     <ul class="post-list">
       {posts.map((post) => <PostPreview post={post} />)}
     </ul>
   </section>
 </BaseLayout>
+
+<style>
+  .hero-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem 0 3rem;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .hero-badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .hero-title {
+    font-size: clamp(2.4rem, 6vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  .hero-description {
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 680px;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--paper);
+    box-shadow: 0 4px 14px var(--glow);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow);
+    color: var(--paper);
+  }
+
+  .btn-secondary {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .view-all-link {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .view-all-link:hover {
+    text-decoration: underline;
+  }
+
+  .post-list {
+    display: grid;
+    gap: 1.25rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+</style>

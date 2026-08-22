@@ -1,5 +1,7 @@
 ---
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import "katex/dist/katex.min.css";
 
 interface Props {
   title?: string;
@@ -14,6 +16,7 @@ const {
 } = Astro.props;
 
 const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -21,65 +24,223 @@ const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href="/rss.xml" />
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
+
+    <!-- Theme initialization script (prevents flash of wrong theme) -->
+    <script is:inline>
+      (function () {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark" || savedTheme === "light") {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      })();
+    </script>
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content / Chuyển đến nội dung chính</a>
+    
     <div class="site-shell">
       <header class="site-header">
-        <a class="brand" href="/" aria-label={`${SITE_TITLE} home`}>{SITE_TITLE}</a>
-        <nav aria-label="Primary navigation">
-          <ul class="nav-list">
-            <li><a href="/blog/">Blog</a></li>
-            <li><a href="/about/">About</a></li>
-            <li><a href="/tools">Little Tools</a></li>
-            <li><a href="/rss.xml">RSS feed</a></li>
-          </ul>
-        </nav>
+        <div class="header-inner">
+          <a class="brand" href="/" aria-label={`${SITE_TITLE} home`}>
+            <span class="brand-dot"></span>
+            <span class="brand-text">{SITE_TITLE}</span>
+          </a>
+          <nav class="site-nav" aria-label="Primary navigation">
+            <ul class="nav-list">
+              <li>
+                <a
+                  href="/blog/"
+                  class={currentPath.startsWith("/blog") ? "active" : ""}
+                >
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/about/"
+                  class={currentPath.startsWith("/about") ? "active" : ""}
+                >
+                  About
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/tools"
+                  class={currentPath.startsWith("/tools") ? "active" : ""}
+                >
+                  Little Tools
+                </a>
+              </li>
+              <li>
+                <a href="/rss.xml" class="rss-link" aria-label="RSS Feed">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+                  <span>RSS</span>
+                </a>
+              </li>
+            </ul>
+            <ThemeToggle />
+          </nav>
+        </div>
       </header>
+
       <main id="main-content" tabindex="-1">
         <slot />
       </main>
+
       <footer class="site-footer">
-        <p>Built with Astro. Published from GitHub Pages.</p>
+        <div class="footer-content">
+          <p>© {new Date().getFullYear()} {SITE_TITLE}. Built with Astro. Published from GitHub Pages.</p>
+          <div class="footer-links">
+            <a href="/rss.xml">RSS</a>
+            <a href="https://github.com/TrietMinh799" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </div>
+        </div>
       </footer>
     </div>
+
+    <!-- Interactive script for code block copy buttons and smooth behaviors -->
+    <script>
+      function setupCodeCopyButtons() {
+        const codeBlocks = document.querySelectorAll<HTMLElement>("pre.astro-code, pre:has(code)");
+
+        codeBlocks.forEach((pre) => {
+          if (pre.dataset.hasCopyButton) return;
+          pre.dataset.hasCopyButton = "true";
+
+          // Wrapper for positioning copy button
+          const wrapper = document.createElement("div");
+          wrapper.className = "code-block-wrapper";
+          pre.parentNode?.insertBefore(wrapper, pre);
+          wrapper.appendChild(pre);
+
+          // Header bar
+          const lang = pre.getAttribute("data-language") || "";
+          const header = document.createElement("div");
+          header.className = "code-block-header";
+
+          const langBadge = document.createElement("span");
+          langBadge.className = "code-block-lang";
+          langBadge.textContent = lang.toUpperCase() || "CODE";
+          header.appendChild(langBadge);
+
+          const copyBtn = document.createElement("button");
+          copyBtn.type = "button";
+          copyBtn.className = "code-copy-btn";
+          copyBtn.setAttribute("aria-label", "Copy code");
+          copyBtn.innerHTML = `
+            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span class="copy-text">Copy</span>
+          `;
+
+          copyBtn.addEventListener("click", async () => {
+            const code = pre.querySelector("code")?.innerText || pre.innerText;
+            try {
+              await navigator.clipboard.writeText(code);
+              copyBtn.classList.add("copied");
+              copyBtn.querySelector(".copy-text")!.textContent = "Copied!";
+              setTimeout(() => {
+                copyBtn.classList.remove("copied");
+                copyBtn.querySelector(".copy-text")!.textContent = "Copy";
+              }, 2000);
+            } catch (err) {
+              console.error("Failed to copy code: ", err);
+            }
+          });
+
+          header.appendChild(copyBtn);
+          wrapper.insertBefore(header, pre);
+        });
+      }
+
+      setupCodeCopyButtons();
+      document.addEventListener("astro:page-load", setupCodeCopyButtons);
+    </script>
   </body>
 </html>
 
 <style is:global>
   :root {
     color-scheme: light;
-    --bg: #f8f7f2;
-    --paper: #fffdf8;
-    --text: #1e201c;
-    --muted: #64665f;
-    --line: #dfddd3;
-    --accent: #27615a;
-    --accent-soft: #dbe9e5;
-    --glow: rgba(219, 233, 229, 0.36);
-    --shadow: 0 24px 70px rgba(36, 35, 28, 0.08);
+    --bg: #fcfbf7;
+    --paper: #ffffff;
+    --text: #181a19;
+    --text-soft: #383c39;
+    --muted: #606560;
+    --line: #e3e2dc;
+    --line-subtle: #f0eee8;
+    --accent: #1e5a52;
+    --accent-hover: #143e39;
+    --accent-soft: #e5f0ed;
+    --glow: rgba(30, 90, 82, 0.08);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.06);
+    --code-header-bg: #f0eee8;
+    
     font-family:
-      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      sans-serif;
+      Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  }
+
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121312;
+    --paper: #181a18;
+    --text: #f0f2f0;
+    --text-soft: #c8cbc8;
+    --muted: #8e938e;
+    --line: #292d29;
+    --line-subtle: #202420;
+    --accent: #4ebfae;
+    --accent-hover: #6ee7d5;
+    --accent-soft: #182b28;
+    --glow: rgba(78, 191, 174, 0.12);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
+    --code-header-bg: #202420;
   }
 
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #141512;
-      --paper: #1c1d19;
-      --text: #f3f4f1;
-      --muted: #9fa199;
-      --line: #2e302b;
-      --accent: #5ab1a3;
-      --accent-soft: #1d3330;
-      --glow: rgba(90, 177, 163, 0.08);
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+      --bg: #121312;
+      --paper: #181a18;
+      --text: #f0f2f0;
+      --text-soft: #c8cbc8;
+      --muted: #8e938e;
+      --line: #292d29;
+      --line-subtle: #202420;
+      --accent: #4ebfae;
+      --accent-hover: #6ee7d5;
+      --accent-soft: #182b28;
+      --glow: rgba(78, 191, 174, 0.12);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
+      --code-header-bg: #202420;
+    }
+  }
+
+  /* Shiki dual themes adaptation */
+  [data-theme="dark"] .astro-code,
+  [data-theme="dark"] .astro-code span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .astro-code,
+    :root:not([data-theme="light"]) .astro-code span {
+      color: var(--shiki-dark) !important;
+      background-color: var(--shiki-dark-bg) !important;
+      font-style: var(--shiki-dark-font-style) !important;
+      font-weight: var(--shiki-dark-font-weight) !important;
+      text-decoration: var(--shiki-dark-text-decoration) !important;
     }
   }
 
@@ -92,14 +253,20 @@ const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
     }
   }
 
-  * {
+  *, *::before, *::after {
     box-sizing: border-box;
   }
 
-  /* Improve focus outline for keyboard navigation */
+  /* Selection highlight */
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  /* Keyboard focus outline */
   *:focus-visible {
     outline: 2px solid var(--accent);
-    outline-offset: 4px;
+    outline-offset: 3px;
     border-radius: 4px;
   }
 
@@ -107,21 +274,28 @@ const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
     outline: none;
   }
 
+  html {
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+  }
+
   body {
     margin: 0;
-    background:
-      linear-gradient(180deg, var(--glow), transparent 22rem),
-      var(--bg);
+    background-color: var(--bg);
     color: var(--text);
-    font-size: 17px;
+    font-size: 16.5px;
     line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   a {
     color: inherit;
-    text-decoration-color: rgba(39, 97, 90, 0.38);
+    text-decoration-color: rgba(30, 90, 82, 0.38);
     text-decoration-thickness: 0.09em;
     text-underline-offset: 0.18em;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
   }
 
   a:hover {
@@ -129,7 +303,6 @@ const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
     text-decoration-color: currentColor;
   }
 
-  /* Skip to main content link style */
   .skip-link {
     position: absolute;
     top: -100px;
@@ -137,9 +310,9 @@ const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
     background: var(--accent);
     color: var(--paper);
     padding: 0.5rem 1rem;
-    z-index: 100;
+    z-index: 1000;
     text-decoration: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-weight: 600;
     font-size: 0.9rem;
     transition: top 0.2s ease;
@@ -152,119 +325,165 @@ const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
   }
 
   .site-shell {
-    width: min(100% - 2rem, 980px);
+    width: min(100% - 2.5rem, 860px);
     margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
+  /* Modern Header */
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line-subtle);
+    padding: 1rem 0;
+    margin-bottom: 2.5rem;
+  }
+
+  .header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 2rem 0 3rem;
+    gap: 1.5rem;
   }
 
   .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     font-weight: 700;
+    font-size: 1.15rem;
     text-decoration: none;
+    color: var(--text);
+    letter-spacing: -0.01em;
   }
 
-  nav {
-    color: var(--muted);
-    font-size: 0.95rem;
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    display: inline-block;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
   }
 
   .nav-list {
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.5rem;
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
   .nav-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     text-decoration: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
   }
 
-  h1,
-  h2,
-  h3 {
-    line-height: 1.12;
+  .nav-list a:hover {
+    color: var(--text);
+    background: var(--accent-soft);
+  }
+
+  .nav-list a.active {
+    color: var(--accent);
+    font-weight: 600;
+    background: var(--accent-soft);
+  }
+
+  .rss-link svg {
+    opacity: 0.7;
+  }
+
+  main {
+    flex: 1;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
     margin: 0;
-    letter-spacing: 0;
+    color: var(--text);
+    text-wrap: balance;
+    letter-spacing: -0.02em;
   }
 
   h1 {
-    max-width: 760px;
-    font-size: clamp(2.4rem, 8vw, 5.7rem);
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    font-weight: 800;
   }
 
   h2 {
-    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    font-weight: 700;
   }
 
   h3 {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
+    font-weight: 600;
   }
 
   p {
     margin: 0;
+    text-wrap: pretty;
   }
 
   img {
     max-width: 100%;
     height: auto;
+    border-radius: 8px;
   }
 
   .lede {
-    max-width: 680px;
     color: var(--muted);
-    font-size: clamp(1.08rem, 2vw, 1.28rem);
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
+    line-height: 1.6;
   }
 
   .section {
-    padding: 3rem 0;
+    padding: 2.5rem 0;
     border-top: 1px solid var(--line);
   }
 
   .stack {
     display: grid;
-    gap: 1.15rem;
-  }
-
-  .post-list {
-    display: grid;
-    gap: 1rem;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .post-card {
-    display: grid;
-    gap: 0.35rem;
-    padding: 1.2rem 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .post-card a {
-    width: fit-content;
-    font-size: 1.35rem;
-    font-weight: 700;
-    line-height: 1.25;
-    text-decoration: none;
+    gap: 1.25rem;
   }
 
   .meta {
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
-    margin: 0.3rem 0 0 0;
+    gap: 0.4rem;
+    margin: 0;
     padding: 0;
     list-style: none;
   }
@@ -273,64 +492,268 @@ const pageTitle = title === SITE_TITLE ? title : `${title} | ${SITE_TITLE}`;
     border: 1px solid var(--line);
     border-radius: 999px;
     color: var(--muted);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     line-height: 1;
-    padding: 0.38rem 0.58rem;
+    padding: 0.35rem 0.65rem;
+    background: var(--paper);
+    text-decoration: none;
+    transition: all 0.15s ease;
   }
 
+  .tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  /* Prose / Content Styling */
   .prose {
-    max-width: 720px;
+    width: 100%;
+    max-width: 100%;
+    line-height: 1.8;
   }
 
   .prose > * + * {
-    margin-top: 1.25rem;
+    margin-top: 1.35rem;
   }
 
-  .prose h2,
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    scroll-margin-top: 5.5rem;
+  }
+
+  .prose h2 {
+    margin-top: 2.8rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
   .prose h3 {
-    margin-top: 2.4rem;
+    margin-top: 2rem;
   }
 
-  .prose ul,
-  .prose ol {
-    padding-left: 1.2rem;
+  .prose ul, .prose ol {
+    padding-left: 1.4rem;
+  }
+
+  .prose li {
+    margin-bottom: 0.4rem;
+    text-wrap: pretty;
   }
 
   .prose blockquote {
-    border-left: 3px solid var(--accent);
-    color: var(--muted);
-    margin-left: 0;
-    padding-left: 1rem;
-  }
-
-  .prose code {
+    border-left: 4px solid var(--accent);
     background: var(--accent-soft);
-    border-radius: 0.25rem;
-    font-size: 0.9em;
-    padding: 0.1rem 0.3rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+    color: var(--text-soft);
   }
 
+  .prose blockquote p {
+    margin: 0;
+  }
+
+  /* Inline Code */
+  .prose :not(pre) > code {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid rgba(30, 90, 82, 0.15);
+    border-radius: 4px;
+    font-size: 0.88em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    padding: 0.15em 0.4em;
+  }
+
+  [data-theme="dark"] .prose :not(pre) > code {
+    border-color: rgba(78, 191, 174, 0.2);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .prose :not(pre) > code {
+      border-color: rgba(78, 191, 174, 0.2);
+    }
+  }
+
+  /* Code Block Wrapper & Copy Button */
+  .code-block-wrapper {
+    position: relative;
+    margin: 1.75rem 0;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .code-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 1rem;
+    background: var(--code-header-bg);
+    border-bottom: 1px solid var(--line);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .code-block-lang {
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .code-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .code-copy-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .code-copy-btn.copied {
+    color: #16a34a;
+    border-color: #16a34a;
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  pre.astro-code {
+    margin: 0 !important;
+    padding: 1.1rem 1.25rem !important;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  /* Tables */
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.75rem 0;
+    font-size: 0.92rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  .prose th, .prose td {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+
+  .prose th {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .prose tr:nth-child(even) td {
+    background: rgba(0, 0, 0, 0.015);
+  }
+
+  [data-theme="dark"] .prose tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .prose tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  /* Horizontal Rules */
+  .prose hr {
+    border: none;
+    height: 1px;
+    background: var(--line);
+    margin: 2.5rem 0;
+  }
+
+  /* KaTeX Math formulas overflow container */
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.75rem 0;
+  }
+
+  /* Modern Footer */
   .site-footer {
     border-top: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 0.9rem;
     margin-top: 4rem;
-    padding: 2rem 0;
+    padding: 2rem 0 3rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  .footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.25rem;
+  }
+
+  .footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent);
   }
 
   @media (max-width: 640px) {
-    body {
-      font-size: 16px;
-    }
-
     .site-shell {
-      width: min(100% - 1.25rem, 980px);
+      width: min(100% - 1.5rem, 860px);
     }
 
     .site-header {
-      align-items: flex-start;
+      padding: 0.75rem 0;
+      margin-bottom: 1.75rem;
+    }
+
+    .header-inner {
       flex-direction: column;
-      padding-bottom: 2.2rem;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .site-nav {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .nav-list {
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .nav-list a {
+      padding: 0.35rem 0.55rem;
+      font-size: 0.88rem;
+    }
+
+    .footer-content {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>

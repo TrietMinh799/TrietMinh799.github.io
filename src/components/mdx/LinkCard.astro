@@ -1,0 +1,107 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  description?: string;
+  icon?: "github" | "external" | "book" | "tool";
+  target?: string;
+}
+
+const {
+  href,
+  title,
+  description,
+  icon = "external",
+  target = "_blank",
+} = Astro.props;
+
+const isExternal = href.startsWith("http") || target === "_blank";
+---
+
+<a
+  href={href}
+  class="link-card"
+  target={isExternal ? target : undefined}
+  rel={isExternal ? "noopener noreferrer" : undefined}
+>
+  <div class="link-card-content">
+    <div class="link-card-header">
+      <span class="link-card-title">{title}</span>
+      <span class="link-card-icon" aria-hidden="true">
+        {icon === "github" && (
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+        )}
+        {icon === "book" && (
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 2v20"/></svg>
+        )}
+        {icon === "tool" && (
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        )}
+        {icon === "external" && (
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+        )}
+      </span>
+    </div>
+    {description && <p class="link-card-desc">{description}</p>}
+    <span class="link-card-url">{href.replace(/^https?:\/\//, "")}</span>
+  </div>
+</a>
+
+<style>
+  .link-card {
+    display: block;
+    margin: 1.5rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .link-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px var(--glow);
+    color: inherit;
+  }
+
+  .link-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .link-card-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--accent);
+  }
+
+  .link-card-icon {
+    color: var(--muted);
+    display: inline-flex;
+  }
+
+  .link-card:hover .link-card-icon {
+    color: var(--accent);
+  }
+
+  .link-card-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+  }
+
+  .link-card-url {
+    font-size: 0.8rem;
+    color: var(--muted);
+    opacity: 0.8;
+    word-break: break-all;
+  }
+</style>

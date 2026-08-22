@@ -1,42 +1,245 @@
 ---
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
 import { getPostSlug } from "../../lib/posts";
+import { getReadingTime } from "../../lib/readingTime";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  );
 
-  return posts.map((post) => ({
+  return posts.map((post, index) => ({
     params: { slug: getPostSlug(post) },
-    props: { post },
+    props: {
+      post,
+      prevPost: posts[index + 1] || null,
+      nextPost: posts[index - 1] || null,
+    },
   }));
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
-const formattedDate = post.data.pubDate.toLocaleDateString("en", {
+const { post, prevPost, nextPost } = Astro.props;
+const { Content, headings } = await render(post);
+
+const formattedDate = post.data.pubDate.toLocaleDateString("vi-VN", {
   year: "numeric",
   month: "long",
   day: "numeric",
 });
+
+const updatedDateFormatted = post.data.updatedDate
+  ? post.data.updatedDate.toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : null;
+
+const readingTime = getReadingTime(post.body || "");
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="stack prose">
-    <header class="stack">
-      <p class="meta">{formattedDate}</p>
-      <h1>{post.data.title}</h1>
-      <p class="lede">{post.data.description}</p>
+  <article class="post-layout">
+    <div class="post-navigation-top">
+      <a href="/blog/" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        Tất cả bài viết
+      </a>
+    </div>
+
+    <header class="post-header stack">
+      <div class="post-meta">
+        <time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time>
+        {
+          updatedDateFormatted && (
+            <>
+              <span class="meta-dot">•</span>
+              <span>(Cập nhật: {updatedDateFormatted})</span>
+            </>
+          )
+        }
+        <span class="meta-dot">•</span>
+        <span class="reading-time">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          {readingTime.text}
+        </span>
+      </div>
+
+      <h1 class="post-title">{post.data.title}</h1>
+      
+      {post.data.description && <p class="lede">{post.data.description}</p>}
+
       {
-        post.data.tags.length > 0 && (
-          <ul class="tags" aria-label="Post tags">
-            {post.data.tags.map((tag) => (
-              <li class="tag">{tag}</li>
+        post.data.tags && post.data.tags.length > 0 && post.data.tags[0] !== "" && (
+          <ul class="tags" aria-label="Thẻ bài viết">
+            {post.data.tags.filter(Boolean).map((tag) => (
+              <li>
+                <a href={`/blog/?tag=${encodeURIComponent(tag)}`} class="tag">
+                  #{tag}
+                </a>
+              </li>
             ))}
           </ul>
         )
       }
     </header>
-    <Content />
+
+    {headings && headings.length >= 2 && <TableOfContents headings={headings} />}
+
+    <div class="prose post-body">
+      <Content />
+    </div>
+
+    <footer class="post-footer">
+      <div class="post-pagination">
+        {
+          prevPost ? (
+            <a href={`/blog/${getPostSlug(prevPost)}/`} class="pagination-card prev">
+              <span class="pagination-label">← Bài trước</span>
+              <span class="pagination-title">{prevPost.data.title}</span>
+            </a>
+          ) : (
+            <div />
+          )
+        }
+        {
+          nextPost ? (
+            <a href={`/blog/${getPostSlug(nextPost)}/`} class="pagination-card next">
+              <span class="pagination-label">Bài kế tiếp →</span>
+              <span class="pagination-title">{nextPost.data.title}</span>
+            </a>
+          ) : (
+            <div />
+          )
+        }
+      </div>
+    </footer>
   </article>
 </BaseLayout>
+
+<style>
+  .post-layout {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .post-navigation-top {
+    margin-bottom: 0.5rem;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+
+  .post-header {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+    gap: 0.9rem;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .meta-dot {
+    opacity: 0.5;
+  }
+
+  .reading-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .post-title {
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .post-body {
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .post-footer {
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .post-pagination {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .pagination-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .pagination-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--glow);
+  }
+
+  .pagination-card.next {
+    text-align: right;
+  }
+
+  .pagination-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .pagination-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .pagination-card:hover .pagination-title {
+    color: var(--accent);
+  }
+
+  @media (max-width: 600px) {
+    .post-pagination {
+      grid-template-columns: 1fr;
+    }
+
+    .pagination-card.next {
+      text-align: left;
+    }
+  }
+</style>

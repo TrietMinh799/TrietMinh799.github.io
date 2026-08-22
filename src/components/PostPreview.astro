@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { getPostSlug } from "../lib/posts";
+import { getReadingTime } from "../lib/readingTime";
 
 interface Props {
   post: CollectionEntry<"blog">;
@@ -8,24 +9,115 @@ interface Props {
 
 const { post } = Astro.props;
 const slug = getPostSlug(post);
-const formattedDate = post.data.pubDate.toLocaleDateString("en", {
+const formattedDate = post.data.pubDate.toLocaleDateString("vi-VN", {
   year: "numeric",
   month: "long",
   day: "numeric",
 });
+
+const readingTime = getReadingTime(post.body || "");
 ---
 
 <li class="post-card">
-  <a href={`/blog/${slug}/`}>{post.data.title}</a>
-  <p class="meta">{formattedDate}</p>
-  <p>{post.data.description}</p>
-  {
-    post.data.tags.length > 0 && (
-      <ul class="tags" aria-label="Post tags">
-        {post.data.tags.map((tag) => (
-          <li class="tag">{tag}</li>
-        ))}
-      </ul>
-    )
-  }
+  <article class="post-card-article">
+    <div class="post-card-meta">
+      <time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time>
+      <span class="meta-separator" aria-hidden="true">•</span>
+      <span class="reading-time">{readingTime.text}</span>
+    </div>
+
+    <h2 class="post-card-title">
+      <a href={`/blog/${slug}/`}>{post.data.title}</a>
+    </h2>
+
+    {post.data.description && <p class="post-card-desc">{post.data.description}</p>}
+
+    {
+      post.data.tags && post.data.tags.length > 0 && post.data.tags[0] !== "" && (
+        <ul class="tags" aria-label="Thẻ phân loại bài viết">
+          {post.data.tags.filter(Boolean).map((tag) => (
+            <li>
+              <span class="tag">#{tag}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </article>
 </li>
+
+<style>
+  .post-card {
+    list-style: none;
+    padding: 1.35rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 10px 30px var(--glow);
+  }
+
+  .post-card-article {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .post-card-meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .meta-separator {
+    opacity: 0.5;
+  }
+
+  .post-card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .post-card-title a {
+    text-decoration: none;
+    color: var(--text);
+    transition: color 0.15s ease;
+  }
+
+  .post-card-title a:hover {
+    color: var(--accent);
+  }
+
+  .post-card-desc {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: var(--accent-soft);
+    border: 1px solid transparent;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+</style>

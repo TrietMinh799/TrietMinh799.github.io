@@ -1,0 +1,157 @@
+---
+interface Props {
+  syncKey?: string;
+}
+
+const { syncKey } = Astro.props;
+---
+
+<div class="tabs-container" data-sync-key={syncKey}>
+  <div class="tabs-header" role="tablist">
+    <!-- Buttons are generated or populated dynamically by script -->
+  </div>
+  <div class="tabs-body">
+    <slot />
+  </div>
+</div>
+
+<script>
+  function setupTabs() {
+    document.querySelectorAll(".tabs-container").forEach((container) => {
+      // Prevent double init
+      if (container.getAttribute("data-initialized") === "true") return;
+      container.setAttribute("data-initialized", "true");
+
+      const header = container.querySelector(".tabs-header");
+      const panels = Array.from(container.querySelectorAll(".tabs-body > .tab-panel")) as HTMLElement[];
+
+      if (!header || panels.length === 0) return;
+
+      header.innerHTML = "";
+      let activeIndex = panels.findIndex((p) => p.hasAttribute("data-default"));
+      if (activeIndex === -1) activeIndex = 0;
+
+      panels.forEach((panel, index) => {
+        const label = panel.getAttribute("data-tab-label") || `Tab ${index + 1}`;
+        const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
+        const panelId = `panel-${Math.random().toString(36).slice(2, 8)}`;
+
+        panel.id = panelId;
+        panel.setAttribute("aria-labelledby", tabId);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = tabId;
+        btn.className = "tab-btn";
+        btn.role = "tab";
+        btn.textContent = label;
+        btn.setAttribute("aria-controls", panelId);
+        btn.setAttribute("aria-selected", index === activeIndex ? "true" : "false");
+
+        btn.addEventListener("click", () => {
+          selectTab(container, index);
+        });
+
+        btn.addEventListener("keydown", (e) => {
+          let nextIndex = -1;
+          if (e.key === "ArrowRight") nextIndex = (index + 1) % panels.length;
+          else if (e.key === "ArrowLeft") nextIndex = (index - 1 + panels.length) % panels.length;
+
+          if (nextIndex !== -1) {
+            e.preventDefault();
+            const buttons = header.querySelectorAll<HTMLButtonElement>(".tab-btn");
+            buttons[nextIndex]?.focus();
+            selectTab(container, nextIndex);
+          }
+        });
+
+        header.appendChild(btn);
+
+        if (index === activeIndex) {
+          panel.classList.add("active");
+        } else {
+          panel.classList.remove("active");
+        }
+      });
+    });
+
+    function selectTab(container: Element, activeIndex: number) {
+      const buttons = container.querySelectorAll(".tabs-header > .tab-btn");
+      const panels = container.querySelectorAll(".tabs-body > .tab-panel");
+
+      buttons.forEach((b, i) => {
+        b.setAttribute("aria-selected", i === activeIndex ? "true" : "false");
+      });
+
+      panels.forEach((p, i) => {
+        if (i === activeIndex) {
+          p.classList.add("active");
+        } else {
+          p.classList.remove("active");
+        }
+      });
+    }
+  }
+
+  setupTabs();
+  document.addEventListener("astro:page-load", setupTabs);
+</script>
+
+<style>
+  .tabs-container {
+    margin: 1.75rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  }
+
+  .tabs-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.5rem 0.5rem 0;
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid var(--line);
+  }
+
+  :global([data-theme="dark"]) .tabs-header {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .tabs-header {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  :global(.tab-btn) {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.15s ease;
+  }
+
+  :global(.tab-btn:hover) {
+    color: var(--text);
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  :global(.tab-btn[aria-selected="true"]) {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+    background: var(--paper);
+  }
+
+  .tabs-body {
+    padding: 1rem 1.25rem;
+  }
+</style>

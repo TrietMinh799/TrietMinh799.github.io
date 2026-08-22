@@ -1,0 +1,87 @@
+---
+interface Props {
+  title: string;
+  open?: boolean;
+}
+
+const { title, open = false } = Astro.props;
+---
+
+<details class="accordion" open={open || undefined}>
+  <summary class="accordion-summary">
+    <span class="accordion-title">{title}</span>
+    <span class="accordion-arrow" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </span>
+  </summary>
+  <div class="accordion-content">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .accordion {
+    margin: 1.25rem 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+
+  .accordion[open] {
+    border-color: var(--accent);
+  }
+
+  .accordion-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    background: rgba(0, 0, 0, 0.015);
+    transition: background 0.15s ease;
+  }
+
+  .accordion-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .accordion-summary:hover {
+    background: var(--accent-soft);
+  }
+
+  .accordion-title {
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .accordion-arrow {
+    display: inline-flex;
+    color: var(--muted);
+    transition: transform 0.2s ease;
+  }
+
+  .accordion[open] .accordion-arrow {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+
+  .accordion-content {
+    padding: 1rem 1.2rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .accordion-content > :first-child {
+    margin-top: 0;
+  }
+
+  .accordion-content > :last-child {
+    margin-bottom: 0;
+  }
+</style>
