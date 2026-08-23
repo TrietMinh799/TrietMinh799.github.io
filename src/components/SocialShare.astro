@@ -1,0 +1,294 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  url?: string;
+}
+
+const { title, description = "", url } = Astro.props;
+const siteUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.href;
+const shareUrl = url || siteUrl;
+
+const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(shareUrl)}`;
+const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`;
+---
+
+<div class="social-share-container" data-share-title={title} data-share-desc={description} data-share-url={shareUrl}>
+  <div class="share-label">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    <span>Chia sẻ bài viết</span>
+  </div>
+
+  <div class="share-buttons">
+    <!-- Web Share API Button (shown when supported) -->
+    <button
+      type="button"
+      class="share-btn share-native-btn"
+      aria-label="Chia sẻ qua ứng dụng"
+      title="Chia sẻ qua ứng dụng"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      <span class="btn-text">Chia sẻ</span>
+    </button>
+
+    <!-- X / Twitter -->
+    <a
+      href={twitterUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="share-btn share-x-btn"
+      aria-label="Chia sẻ lên X (Twitter)"
+      title="Chia sẻ lên X"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      <span class="btn-text">X</span>
+    </a>
+
+    <!-- Facebook -->
+    <a
+      href={facebookUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="share-btn share-fb-btn"
+      aria-label="Chia sẻ lên Facebook"
+      title="Chia sẻ lên Facebook"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      <span class="btn-text">Facebook</span>
+    </a>
+
+    <!-- LinkedIn -->
+    <a
+      href={linkedinUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="share-btn share-in-btn"
+      aria-label="Chia sẻ lên LinkedIn"
+      title="Chia sẻ lên LinkedIn"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+      <span class="btn-text">LinkedIn</span>
+    </a>
+
+    <!-- Telegram -->
+    <a
+      href={telegramUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="share-btn share-tg-btn"
+      aria-label="Chia sẻ lên Telegram"
+      title="Chia sẻ lên Telegram"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m20.665 3.717-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l-.313 4.674c.458 0 .661-.21.917-.457l2.202-2.141 4.58 3.384c.844.465 1.452.226 1.663-.785l3.003-14.151c.309-1.239-.473-1.8-1.282-1.434z"/></svg>
+      <span class="btn-text">Telegram</span>
+    </a>
+
+    <!-- Copy Link -->
+    <button
+      type="button"
+      class="share-btn share-copy-btn"
+      aria-label="Sao chép liên kết"
+      title="Sao chép liên kết"
+    >
+      <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+      <span class="copy-text">Sao chép link</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  function setupSocialShare() {
+    const containers = document.querySelectorAll<HTMLElement>(".social-share-container");
+
+    containers.forEach((container) => {
+      if (container.dataset.hasShareInit) return;
+      container.dataset.hasShareInit = "true";
+
+      const title = container.dataset.shareTitle || document.title;
+      const desc = container.dataset.shareDesc || "";
+      const url = container.dataset.shareUrl || window.location.href;
+
+      // Handle popup windows for social links
+      const socialLinks = container.querySelectorAll<HTMLAnchorElement>("a.share-btn");
+      socialLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const targetUrl = link.href;
+          const width = 600;
+          const height = 480;
+          const left = window.screen.width / 2 - width / 2;
+          const top = window.screen.height / 2 - height / 2;
+          window.open(
+            targetUrl,
+            "share-dialog",
+            `width=${width},height=${height},top=${top},left=${left},toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1`
+          );
+        });
+      });
+
+      // Handle Native Web Share API
+      const nativeBtn = container.querySelector<HTMLButtonElement>(".share-native-btn");
+      if (nativeBtn) {
+        if (typeof navigator !== "undefined" && navigator.share) {
+          nativeBtn.addEventListener("click", async () => {
+            try {
+              await navigator.share({
+                title: title,
+                text: desc || title,
+                url: url,
+              });
+            } catch (err) {
+              if ((err as Error).name !== "AbortError") {
+                console.error("Web share error:", err);
+              }
+            }
+          });
+        } else {
+          // Hide native button if Web Share API is unsupported
+          nativeBtn.style.display = "none";
+        }
+      }
+
+      // Handle Copy Link button
+      const copyBtn = container.querySelector<HTMLButtonElement>(".share-copy-btn");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(url);
+            copyBtn.classList.add("copied");
+            const textSpan = copyBtn.querySelector(".copy-text");
+            if (textSpan) textSpan.textContent = "Đã chép link!";
+            setTimeout(() => {
+              copyBtn.classList.remove("copied");
+              if (textSpan) textSpan.textContent = "Sao chép link";
+            }, 2200);
+          } catch (err) {
+            console.error("Failed to copy link:", err);
+          }
+        });
+      }
+    });
+  }
+
+  setupSocialShare();
+  document.addEventListener("astro:page-load", setupSocialShare);
+</script>
+
+<style>
+  .social-share-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.25rem 1.5rem;
+    margin: 2.5rem 0 1.5rem 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .social-share-container:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px var(--glow);
+  }
+
+  .share-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .share-label svg {
+    color: var(--accent);
+  }
+
+  .share-buttons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .share-btn:hover {
+    transform: translateY(-2px);
+    color: var(--text);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 4px 12px var(--glow);
+  }
+
+  .share-btn:active {
+    transform: translateY(0);
+  }
+
+  .share-native-btn {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(30, 90, 82, 0.2);
+  }
+
+  .share-native-btn:hover {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  .share-copy-btn .check-icon {
+    display: none;
+  }
+
+  .share-copy-btn.copied {
+    color: #16a34a;
+    border-color: #16a34a;
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  .share-copy-btn.copied .copy-icon {
+    display: none;
+  }
+
+  .share-copy-btn.copied .check-icon {
+    display: inline-block;
+  }
+
+  @media (max-width: 600px) {
+    .social-share-container {
+      padding: 1rem 1.15rem;
+    }
+
+    .share-buttons {
+      gap: 0.4rem;
+    }
+
+    .share-btn {
+      padding: 0.4rem 0.7rem;
+      font-size: 0.8rem;
+    }
+  }
+</style>

@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import TableOfContents from "../../components/TableOfContents.astro";
+import SocialShare from "../../components/SocialShare.astro";
 import { getPostSlug } from "../../lib/posts";
 import { getReadingTime } from "../../lib/readingTime";
 
@@ -101,6 +102,8 @@ const readingTime = getReadingTime(post.body || "");
     <div class="prose post-body">
       <Content />
     </div>
+
+    <SocialShare title={post.data.title} description={post.data.description} />
 
     <footer class="post-footer">
       <div class="post-pagination">
