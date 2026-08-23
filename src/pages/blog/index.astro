@@ -58,9 +58,9 @@ const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
 
     <ul class="post-list" id="post-list">
       {
-        posts.map((post) => (
+        posts.map((post, i) => (
           <div class="post-item-wrapper" data-tags={JSON.stringify(post.data.tags || [])}>
-            <PostPreview post={post} />
+            <PostPreview post={post} index={i} />
           </div>
         ))
       }
@@ -94,6 +94,8 @@ const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
           const tags: string[] = JSON.parse(item.dataset.tags || "[]");
           if (selectedTag === "all" || tags.includes(selectedTag)) {
             item.style.display = "block";
+            item.style.opacity = "1";
+            item.style.transform = "translateY(0)";
             visibleCount++;
           } else {
             item.style.display = "none";
@@ -138,8 +140,20 @@ const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
 </script>
 
 <style>
+  @keyframes blogHeaderEntrance {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .blog-section {
     gap: 2rem;
+    animation: blogHeaderEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .blog-header {
@@ -155,6 +169,7 @@ const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: 10px;
+    box-shadow: var(--shadow-sm);
   }
 
   .filter-title {
@@ -179,13 +194,14 @@ const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
     font-size: 0.82rem;
     color: var(--muted);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .filter-tag-btn:hover {
     color: var(--text);
     border-color: var(--accent);
     background: var(--accent-soft);
+    transform: translateY(-1px);
   }
 
   .filter-tag-btn.active {
@@ -193,6 +209,7 @@ const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
     color: var(--paper);
     border-color: var(--accent);
     font-weight: 600;
+    box-shadow: 0 2px 8px var(--glow);
   }
 
   .post-list {
@@ -205,6 +222,7 @@ const allTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
 
   .post-item-wrapper {
     list-style: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .no-posts {

@@ -82,13 +82,14 @@ const filteredHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
   }
 
   .toc-link {
+    display: inline-block;
     color: var(--muted);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .toc-link:hover {
     color: var(--accent);
-    text-decoration: underline;
+    transform: translateX(3px);
   }
 </style>

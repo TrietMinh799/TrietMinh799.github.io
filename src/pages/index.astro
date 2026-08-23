@@ -44,17 +44,29 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
     </div>
 
     <ul class="post-list">
-      {posts.map((post) => <PostPreview post={post} />)}
+      {posts.map((post, i) => <PostPreview post={post} index={i} />)}
     </ul>
   </section>
 </BaseLayout>
 
 <style>
+  @keyframes heroEntrance {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .hero-section {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     padding: 1.5rem 0 3rem;
+    animation: heroEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .hero-badge {
@@ -108,7 +120,7 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
     font-size: 0.95rem;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-primary {
@@ -144,14 +156,18 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
   }
 
   .view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     font-size: 0.92rem;
     font-weight: 600;
     color: var(--accent);
     text-decoration: none;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
   }
 
   .view-all-link:hover {
-    text-decoration: underline;
+    transform: translateX(3px);
   }
 
   .post-list {

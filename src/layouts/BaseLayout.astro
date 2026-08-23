@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import SEO from "../components/SEO.astro";
@@ -55,14 +56,20 @@ const currentPath = Astro.url.pathname;
       noindex={noindex}
     />
 
-    <!-- Theme initialization script (prevents flash of wrong theme) -->
+    <ClientRouter />
+
+    <!-- Theme initialization script (prevents flash of wrong theme on initial load & page swap) -->
     <script is:inline>
-      (function () {
+      function applySavedTheme() {
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "dark" || savedTheme === "light") {
           document.documentElement.setAttribute("data-theme", savedTheme);
+        } else {
+          document.documentElement.removeAttribute("data-theme");
         }
-      })();
+      }
+      applySavedTheme();
+      document.addEventListener("astro:after-swap", applySavedTheme);
     </script>
   </head>
   <body>
@@ -208,8 +215,33 @@ const currentPath = Astro.url.pathname;
         });
       }
 
+      function updateActiveNavLink() {
+        const currentPath = window.location.pathname;
+        const normalized = currentPath.endsWith("/") ? currentPath : currentPath + "/";
+        document.querySelectorAll(".nav-list a").forEach((link) => {
+          const href = link.getAttribute("href");
+          if (!href) return;
+          const hrefNormalized = href.endsWith("/") ? href : href + "/";
+          if (hrefNormalized === "/blog/" && normalized.startsWith("/blog/")) {
+            link.classList.add("active");
+          } else if (hrefNormalized === "/about/" && normalized.startsWith("/about/")) {
+            link.classList.add("active");
+          } else if ((href === "/tools" || hrefNormalized === "/tools/") && normalized.startsWith("/tools")) {
+            link.classList.add("active");
+          } else if (hrefNormalized === "/" && (normalized === "/" || normalized === "")) {
+            link.classList.add("active");
+          } else {
+            link.classList.remove("active");
+          }
+        });
+      }
+
       setupCodeCopyButtons();
-      document.addEventListener("astro:page-load", setupCodeCopyButtons);
+      updateActiveNavLink();
+      document.addEventListener("astro:page-load", () => {
+        setupCodeCopyButtons();
+        updateActiveNavLink();
+      });
     </script>
   </body>
 </html>
@@ -295,12 +327,52 @@ const currentPath = Astro.url.pathname;
     }
   }
 
+  /* View Transitions Animations */
+  @keyframes pageFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pageFadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  ::view-transition-old(root) {
+    animation: 160ms cubic-bezier(0.4, 0, 1, 1) both pageFadeOut;
+  }
+
+  ::view-transition-new(root) {
+    animation: 240ms cubic-bezier(0.16, 1, 0.3, 1) both pageFadeIn;
+  }
+
+  ::view-transition-group(site-header) {
+    z-index: 100;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    * {
+    *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
     }
   }
 
@@ -338,7 +410,7 @@ const currentPath = Astro.url.pathname;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   a {
@@ -346,7 +418,7 @@ const currentPath = Astro.url.pathname;
     text-decoration-color: rgba(30, 90, 82, 0.38);
     text-decoration-thickness: 0.09em;
     text-underline-offset: 0.18em;
-    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), text-decoration-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   a:hover {
@@ -385,6 +457,7 @@ const currentPath = Astro.url.pathname;
 
   /* Modern Header */
   .site-header {
+    view-transition-name: site-header;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -413,6 +486,22 @@ const currentPath = Astro.url.pathname;
     text-decoration: none;
     color: var(--text);
     letter-spacing: -0.01em;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .brand:hover {
+    transform: scale(1.02);
+  }
+
+  @keyframes brandPulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 6px var(--accent);
+    }
+    50% {
+      transform: scale(1.2);
+      box-shadow: 0 0 12px var(--accent);
+    }
   }
 
   .brand-dot {
@@ -422,6 +511,7 @@ const currentPath = Astro.url.pathname;
     background: var(--accent);
     box-shadow: 0 0 10px var(--accent);
     display: inline-block;
+    animation: brandPulse 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   .site-nav {
@@ -449,12 +539,17 @@ const currentPath = Astro.url.pathname;
     color: var(--muted);
     font-size: 0.92rem;
     font-weight: 500;
-    transition: all 0.15s ease;
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .nav-list a:hover {
     color: var(--text);
     background: var(--accent-soft);
+    transform: translateY(-1px);
+  }
+
+  .nav-list a:active {
+    transform: translateY(0);
   }
 
   .nav-list a.active {
