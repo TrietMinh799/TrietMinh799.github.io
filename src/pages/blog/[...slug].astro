@@ -3,6 +3,7 @@ import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import TableOfContents from "../../components/TableOfContents.astro";
 import SocialShare from "../../components/SocialShare.astro";
+import ReadingToolbar from "../../components/ReadingToolbar.astro";
 import { getPostSlug } from "../../lib/posts";
 import { getReadingTime } from "../../lib/readingTime";
 
@@ -97,6 +98,8 @@ const readingTime = getReadingTime(post.body || "");
       }
     </header>
 
+    <ReadingToolbar />
+
     {headings && headings.length >= 2 && <TableOfContents headings={headings} />}
 
     <div class="prose post-body">
@@ -136,8 +139,9 @@ const readingTime = getReadingTime(post.body || "");
   .post-layout {
     display: grid;
     gap: 1.5rem;
-    max-width: 760px;
+    max-width: 740px;
     margin: 0 auto;
+    width: 100%;
   }
 
   .post-navigation-top {
@@ -201,8 +205,10 @@ const readingTime = getReadingTime(post.body || "");
   }
 
   .post-body {
-    font-size: 1.05rem;
-    line-height: 1.8;
+    font-size: var(--reading-size, 1.08rem);
+    font-family: var(--reading-font, inherit);
+    line-height: 1.82;
+    transition: font-size 0.2s ease, font-family 0.2s ease;
   }
 
   .post-footer {

@@ -3,6 +3,8 @@ import { ClientRouter } from "astro:transitions";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import SEO from "../components/SEO.astro";
+import ReadingProgressBar from "../components/ReadingProgressBar.astro";
+import BackToTop from "../components/BackToTop.astro";
 import "katex/dist/katex.min.css";
 
 interface Props {
@@ -58,21 +60,39 @@ const currentPath = Astro.url.pathname;
 
     <ClientRouter />
 
-    <!-- Theme initialization script (prevents flash of wrong theme on initial load & page swap) -->
+    <!-- Theme & Reading preferences initialization script (prevents flash of wrong styles) -->
     <script is:inline>
-      function applySavedTheme() {
+      function applySavedThemeAndPrefs() {
         const savedTheme = localStorage.getItem("theme");
-        if (savedTheme === "dark" || savedTheme === "light") {
+        if (savedTheme === "dark" || savedTheme === "light" || savedTheme === "sepia") {
           document.documentElement.setAttribute("data-theme", savedTheme);
         } else {
           document.documentElement.removeAttribute("data-theme");
         }
+
+        const savedFontSize = localStorage.getItem("reading-size-index");
+        if (savedFontSize !== null) {
+          const SIZES = ["0.95rem", "1.08rem", "1.22rem", "1.36rem"];
+          const idx = parseInt(savedFontSize, 10);
+          if (!isNaN(idx) && SIZES[idx]) {
+            document.documentElement.style.setProperty("--reading-size", SIZES[idx]);
+          }
+        }
+
+        const savedFontFamily = localStorage.getItem("reading-font");
+        if (savedFontFamily === "serif") {
+          document.documentElement.style.setProperty(
+            "--reading-font",
+            'Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif'
+          );
+        }
       }
-      applySavedTheme();
-      document.addEventListener("astro:after-swap", applySavedTheme);
+      applySavedThemeAndPrefs();
+      document.addEventListener("astro:after-swap", applySavedThemeAndPrefs);
     </script>
   </head>
   <body>
+    <ReadingProgressBar />
     <a href="#main-content" class="skip-link">Skip to main content / Chuyển đến nội dung chính</a>
     
     <div class="site-shell">
@@ -243,6 +263,7 @@ const currentPath = Astro.url.pathname;
         updateActiveNavLink();
       });
     </script>
+    <BackToTop />
   </body>
 </html>
 
@@ -263,10 +284,28 @@ const currentPath = Astro.url.pathname;
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.06);
     --code-header-bg: #f0eee8;
+    --reading-size: 1.08rem;
+    --reading-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     
-    font-family:
-      Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: var(--reading-font);
+  }
+
+  [data-theme="sepia"] {
+    color-scheme: light;
+    --bg: #f7f2e7;
+    --paper: #fffdf9;
+    --text: #2d2a26;
+    --text-soft: #4a453e;
+    --muted: #787067;
+    --line: #e4dcce;
+    --line-subtle: #eee6d8;
+    --accent: #1e5a52;
+    --accent-hover: #143e39;
+    --accent-soft: #ece4d4;
+    --glow: rgba(30, 90, 82, 0.08);
+    --shadow-sm: 0 2px 8px rgba(45, 42, 38, 0.04);
+    --shadow-md: 0 12px 32px rgba(45, 42, 38, 0.08);
+    --code-header-bg: #ece4d4;
   }
 
   [data-theme="dark"] {
@@ -453,6 +492,7 @@ const currentPath = Astro.url.pathname;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
   }
 
   /* Modern Header */
@@ -468,6 +508,7 @@ const currentPath = Astro.url.pathname;
     border-bottom: 1px solid var(--line-subtle);
     padding: 1rem 0;
     margin-bottom: 2.5rem;
+    transition: opacity 0.3s ease, height 0.3s ease, padding 0.3s ease, margin 0.3s ease;
   }
 
   .header-inner {
@@ -656,7 +697,11 @@ const currentPath = Astro.url.pathname;
   .prose {
     width: 100%;
     max-width: 100%;
-    line-height: 1.8;
+    font-size: var(--reading-size, 1.08rem);
+    font-family: var(--reading-font, inherit);
+    line-height: 1.82;
+    letter-spacing: -0.005em;
+    transition: font-size 0.2s ease, font-family 0.2s ease;
   }
 
   .prose > * + * {
@@ -917,5 +962,43 @@ const currentPath = Astro.url.pathname;
       flex-direction: column;
       align-items: flex-start;
     }
+  }
+
+  /* Focus / Zen Mode Styling */
+  body.zen-mode .site-header,
+  body.zen-mode .site-footer,
+  body.zen-mode .post-navigation-top,
+  body.zen-mode .post-footer,
+  body.zen-mode .social-share-container,
+  body.zen-mode .tags-filter-container,
+  body.zen-mode .back-to-top {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transform: translateY(-8px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  }
+
+  body.zen-mode .site-header {
+    height: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    overflow: hidden;
+  }
+
+  body.zen-mode .site-shell {
+    width: min(100% - 2rem, 740px);
+    padding-top: 2rem;
+    padding-bottom: 5rem;
+  }
+
+  body.zen-mode .post-layout {
+    max-width: 100%;
+  }
+
+  body.zen-mode .prose {
+    font-size: calc(var(--reading-size, 1.08rem) * 1.05);
+    line-height: 1.88;
   }
 </style>

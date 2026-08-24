@@ -5,11 +5,12 @@
   type="button"
   id="theme-toggle"
   class="theme-toggle"
-  aria-label="Chuyển chế độ sáng/tối"
-  title="Chuyển chế độ sáng/tối"
+  aria-label="Chuyển giao diện (Sáng / Đọc sách / Tối)"
+  title="Chuyển giao diện: Sáng ☀️ → Đọc sách 📖 → Tối 🌙 [Phím tắt: T]"
 >
+  <!-- Sun icon (Light mode) -->
   <svg
-    class="sun-icon"
+    class="theme-icon icon-sun"
     xmlns="http://www.w3.org/2000/svg"
     width="18"
     height="18"
@@ -31,8 +32,29 @@
     <path d="m6.34 17.66-1.41 1.41"></path>
     <path d="m19.07 4.93-1.41 1.41"></path>
   </svg>
+
+  <!-- Book icon (Sepia / Eye-comfort mode) -->
   <svg
-    class="moon-icon"
+    class="theme-icon icon-book"
+    xmlns="http://www.w3.org/2000/svg"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+    <path d="M6 6h10"></path>
+    <path d="M6 10h10"></path>
+  </svg>
+
+  <!-- Moon icon (Dark mode) -->
+  <svg
+    class="theme-icon icon-moon"
     xmlns="http://www.w3.org/2000/svg"
     width="18"
     height="18"
@@ -54,14 +76,39 @@
     if (!toggle || toggle.dataset.hasThemeListener) return;
     toggle.dataset.hasThemeListener = "true";
 
-    toggle.addEventListener("click", () => {
-      const currentTheme = document.documentElement.getAttribute("data-theme");
-      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const isDark = currentTheme === "dark" || (!currentTheme && systemDark);
+    function getEffectiveTheme(): "light" | "sepia" | "dark" {
+      const explicit = document.documentElement.getAttribute("data-theme");
+      if (explicit === "dark" || explicit === "sepia" || explicit === "light") {
+        return explicit;
+      }
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
 
-      const nextTheme = isDark ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", nextTheme);
-      localStorage.setItem("theme", nextTheme);
+    function cycleTheme() {
+      const current = getEffectiveTheme();
+      let next: "light" | "sepia" | "dark";
+      if (current === "light") {
+        next = "sepia";
+      } else if (current === "sepia") {
+        next = "dark";
+      } else {
+        next = "light";
+      }
+
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    toggle.addEventListener("click", cycleTheme);
+
+    // Global keyboard shortcut 'T' for theme toggle
+    window.addEventListener("keydown", (e) => {
+      if (
+        (e.key === "t" || e.key === "T") &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)
+      ) {
+        cycleTheme();
+      }
     });
   }
 
@@ -80,7 +127,7 @@
     padding: 0.45rem;
     color: var(--muted);
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
   }
@@ -96,33 +143,34 @@
     transform: scale(0.95);
   }
 
-  .sun-icon,
-  .moon-icon {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
-  }
-
-  .sun-icon {
+  .theme-icon {
     display: none;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .moon-icon {
+  /* Default Light Mode */
+  :global(:root:not([data-theme])) .icon-sun,
+  :global([data-theme="light"]) .icon-sun {
     display: block;
   }
 
-  :global([data-theme="dark"]) .sun-icon {
+  /* Sepia Mode */
+  :global([data-theme="sepia"]) .icon-book {
     display: block;
   }
 
-  :global([data-theme="dark"]) .moon-icon {
-    display: none;
+  /* Dark Mode */
+  :global([data-theme="dark"]) .icon-moon {
+    display: block;
   }
 
+  /* OS Dark mode fallback when no explicit attribute */
   @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme="light"])) .sun-icon {
-      display: block;
-    }
-    :global(:root:not([data-theme="light"])) .moon-icon {
+    :global(:root:not([data-theme])) .icon-sun {
       display: none;
+    }
+    :global(:root:not([data-theme])) .icon-moon {
+      display: block;
     }
   }
 </style>

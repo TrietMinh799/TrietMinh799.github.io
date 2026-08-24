@@ -1,0 +1,544 @@
+---
+---
+
+<div class="reading-toolbar-container" id="reading-toolbar">
+  <div class="reading-toolbar" role="toolbar" aria-label="Tùy chỉnh đọc & Chế độ tập trung">
+    <!-- Focus / Zen Mode Button -->
+    <button
+      type="button"
+      class="toolbar-btn focus-toggle-btn"
+      id="zen-mode-toggle"
+      aria-label="Bật/Tắt chế độ tập trung"
+      title="Chế độ tập trung [Phím tắt: F]"
+    >
+      <svg
+        class="focus-icon-enter"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+        <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+        <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+        <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+      </svg>
+      <svg
+        class="focus-icon-exit"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
+        <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
+        <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
+        <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
+      </svg>
+      <span class="btn-label focus-label">Tập trung</span>
+      <kbd class="shortcut-badge">F</kbd>
+    </button>
+
+    <div class="toolbar-divider" aria-hidden="true"></div>
+
+    <!-- Font Family Switcher -->
+    <button
+      type="button"
+      class="toolbar-btn font-family-btn"
+      id="font-family-toggle"
+      aria-label="Đổi phông chữ (Sans-serif / Serif)"
+      title="Đổi phông chữ Đọc sách (Sans / Serif)"
+    >
+      <span class="font-indicator" id="font-family-indicator">Sans</span>
+    </button>
+
+    <div class="toolbar-divider" aria-hidden="true"></div>
+
+    <!-- Font Size Controls -->
+    <div class="font-size-group">
+      <button
+        type="button"
+        class="toolbar-btn font-btn"
+        id="font-decrease"
+        aria-label="Giảm kích thước chữ"
+        title="Giảm cỡ chữ"
+      >
+        <span style="font-size: 0.8rem; font-weight: 700;">A-</span>
+      </button>
+
+      <span class="font-size-label" id="font-size-indicator">100%</span>
+
+      <button
+        type="button"
+        class="toolbar-btn font-btn"
+        id="font-increase"
+        aria-label="Tăng kích thước chữ"
+        title="Tăng cỡ chữ"
+      >
+        <span style="font-size: 1.05rem; font-weight: 700;">A+</span>
+      </button>
+    </div>
+
+    <div class="toolbar-divider" aria-hidden="true"></div>
+
+    <!-- Keyboard Shortcuts Info -->
+    <button
+      type="button"
+      class="toolbar-btn info-btn"
+      id="shortcuts-toggle-btn"
+      aria-label="Xem phím tắt hỗ trợ tập trung"
+      title="Phím tắt đọc sách [?]"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+    </button>
+  </div>
+
+  <!-- Shortcuts Modal Popover -->
+  <div class="shortcuts-modal" id="shortcuts-modal" hidden>
+    <div class="shortcuts-header">
+      <span class="shortcuts-title">Phím tắt đọc & tập trung</span>
+      <button type="button" class="close-shortcuts-btn" id="close-shortcuts-btn" aria-label="Đóng bảng phím tắt">✕</button>
+    </div>
+    <ul class="shortcuts-list">
+      <li>
+        <span>Bật/Tắt chế độ tập trung</span>
+        <kbd>F</kbd>
+      </li>
+      <li>
+        <span>Chuyển giao diện (Sáng/Đọc/Tối)</span>
+        <kbd>T</kbd>
+      </li>
+      <li>
+        <span>Thoát chế độ tập trung</span>
+        <kbd>Esc</kbd>
+      </li>
+      <li>
+        <span>Mở/Đóng trợ giúp phím tắt</span>
+        <kbd>?</kbd>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Floating Exit Zen Pill (visible when in Zen mode) -->
+<div class="zen-exit-pill" id="zen-exit-pill" aria-hidden="true">
+  <span>Đang ở chế độ tập trung</span>
+  <button type="button" id="zen-exit-btn" class="zen-exit-btn">
+    Thoát <kbd>Esc</kbd>
+  </button>
+</div>
+
+<script>
+  const FONT_SIZES = [
+    { label: "85%", size: "0.95rem" },
+    { label: "100%", size: "1.08rem" },
+    { label: "115%", size: "1.22rem" },
+    { label: "130%", size: "1.36rem" },
+  ];
+
+  function initReadingToolbar() {
+    const zenToggle = document.getElementById("zen-mode-toggle");
+    const zenExitBtn = document.getElementById("zen-exit-btn");
+    const fontDecreaseBtn = document.getElementById("font-decrease");
+    const fontIncreaseBtn = document.getElementById("font-increase");
+    const fontSizeIndicator = document.getElementById("font-size-indicator");
+    const fontFamilyToggle = document.getElementById("font-family-toggle");
+    const fontFamilyIndicator = document.getElementById("font-family-indicator");
+    const shortcutsBtn = document.getElementById("shortcuts-toggle-btn");
+    const shortcutsModal = document.getElementById("shortcuts-modal");
+    const closeShortcutsBtn = document.getElementById("close-shortcuts-btn");
+
+    if (!zenToggle || zenToggle.dataset.hasReadingListener) return;
+    zenToggle.dataset.hasReadingListener = "true";
+
+    // 1. Restore saved font size
+    let currentSizeIndex = parseInt(localStorage.getItem("reading-size-index") || "1", 10);
+    if (isNaN(currentSizeIndex) || currentSizeIndex < 0 || currentSizeIndex >= FONT_SIZES.length) {
+      currentSizeIndex = 1;
+    }
+
+    function applyFontSize(index: number) {
+      currentSizeIndex = Math.max(0, Math.min(index, FONT_SIZES.length - 1));
+      const entry = FONT_SIZES[currentSizeIndex];
+      document.documentElement.style.setProperty("--reading-size", entry.size);
+      if (fontSizeIndicator) fontSizeIndicator.textContent = entry.label;
+      localStorage.setItem("reading-size-index", currentSizeIndex.toString());
+    }
+
+    applyFontSize(currentSizeIndex);
+
+    fontDecreaseBtn?.addEventListener("click", () => applyFontSize(currentSizeIndex - 1));
+    fontIncreaseBtn?.addEventListener("click", () => applyFontSize(currentSizeIndex + 1));
+
+    // 2. Restore saved font family (Sans vs Serif)
+    let currentFont = localStorage.getItem("reading-font") || "sans";
+    function applyFontFamily(font: string) {
+      currentFont = font;
+      if (font === "serif") {
+        document.documentElement.style.setProperty(
+          "--reading-font",
+          'Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif'
+        );
+        if (fontFamilyIndicator) fontFamilyIndicator.textContent = "Serif";
+      } else {
+        document.documentElement.style.setProperty(
+          "--reading-font",
+          'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        );
+        if (fontFamilyIndicator) fontFamilyIndicator.textContent = "Sans";
+      }
+      localStorage.setItem("reading-font", currentFont);
+    }
+
+    applyFontFamily(currentFont);
+
+    fontFamilyToggle?.addEventListener("click", () => {
+      applyFontFamily(currentFont === "sans" ? "serif" : "sans");
+    });
+
+    // 3. Zen / Focus Mode
+    function toggleZenMode(force?: boolean) {
+      const isZen = typeof force === "boolean" ? force : !document.body.classList.contains("zen-mode");
+      if (isZen) {
+        document.body.classList.add("zen-mode");
+        zenToggle?.classList.add("active");
+        if (shortcutsModal) shortcutsModal.hidden = true;
+      } else {
+        document.body.classList.remove("zen-mode");
+        zenToggle?.classList.remove("active");
+      }
+    }
+
+    zenToggle?.addEventListener("click", () => toggleZenMode());
+    zenExitBtn?.addEventListener("click", () => toggleZenMode(false));
+
+    // 4. Shortcuts Modal
+    function toggleShortcuts(show?: boolean) {
+      if (!shortcutsModal) return;
+      const willShow = typeof show === "boolean" ? show : shortcutsModal.hidden;
+      shortcutsModal.hidden = !willShow;
+    }
+
+    shortcutsBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleShortcuts();
+    });
+
+    closeShortcutsBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleShortcuts(false);
+    });
+
+    document.addEventListener("click", (e) => {
+      if (shortcutsModal && !shortcutsModal.hidden && !shortcutsModal.contains(e.target as Node)) {
+        shortcutsModal.hidden = true;
+      }
+    });
+
+    // 5. Keyboard shortcuts for F, Esc, ?
+    window.addEventListener("keydown", (e) => {
+      const targetTag = (e.target as HTMLElement)?.tagName;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(targetTag)) return;
+
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        toggleZenMode();
+      } else if (e.key === "Escape") {
+        if (shortcutsModal && !shortcutsModal.hidden) {
+          shortcutsModal.hidden = true;
+        } else if (document.body.classList.contains("zen-mode")) {
+          toggleZenMode(false);
+        }
+      } else if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+        e.preventDefault();
+        toggleShortcuts();
+      }
+    });
+  }
+
+  initReadingToolbar();
+  document.addEventListener("astro:page-load", initReadingToolbar);
+</script>
+
+<style>
+  .reading-toolbar-container {
+    position: relative;
+    margin: 1.25rem 0 1.75rem;
+    z-index: 80;
+  }
+
+  .reading-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    user-select: none;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--line);
+    margin: 0 0.2rem;
+  }
+
+  .toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .toolbar-btn:hover {
+    color: var(--text);
+    background: var(--accent-soft);
+    border-color: var(--line-subtle);
+  }
+
+  .toolbar-btn:active {
+    transform: scale(0.96);
+  }
+
+  .focus-toggle-btn {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .focus-toggle-btn.active,
+  :global(body.zen-mode) .focus-toggle-btn {
+    background: var(--accent);
+    color: var(--paper);
+    box-shadow: 0 2px 8px var(--glow);
+  }
+
+  .focus-icon-exit {
+    display: none;
+  }
+
+  :global(body.zen-mode) .focus-icon-enter {
+    display: none;
+  }
+
+  :global(body.zen-mode) .focus-icon-exit {
+    display: inline-block;
+  }
+
+  .shortcut-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-family: ui-monospace, monospace;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    background: var(--line-subtle);
+    color: var(--muted);
+    border: 1px solid var(--line);
+    line-height: 1;
+  }
+
+  :global(body.zen-mode) .shortcut-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--paper);
+    border-color: transparent;
+  }
+
+  .font-size-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
+  .font-btn {
+    padding: 0.25rem 0.45rem;
+    min-width: 28px;
+    justify-content: center;
+  }
+
+  .font-size-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 38px;
+    text-align: center;
+  }
+
+  .font-indicator {
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .info-btn {
+    padding: 0.35rem 0.45rem;
+  }
+
+  /* Shortcuts Modal */
+  .shortcuts-modal {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    padding: 1rem;
+    width: 290px;
+    z-index: 100;
+    animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes modalPop {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .shortcuts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .shortcuts-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .close-shortcuts-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.2rem;
+    line-height: 1;
+    border-radius: 4px;
+  }
+
+  .close-shortcuts-btn:hover {
+    color: var(--text);
+  }
+
+  .shortcuts-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .shortcuts-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .shortcuts-list kbd {
+    font-size: 0.72rem;
+    font-family: ui-monospace, monospace;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    border: 1px solid rgba(30, 90, 82, 0.2);
+    font-weight: 600;
+  }
+
+  /* Zen Exit Floating Pill */
+  .zen-exit-pill {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--paper);
+    color: var(--muted);
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-md);
+    font-size: 0.82rem;
+    z-index: 1000;
+    animation: pillFade 0.3s ease;
+  }
+
+  @keyframes pillFade {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  :global(body.zen-mode) .zen-exit-pill {
+    display: flex;
+  }
+
+  .zen-exit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .zen-exit-btn:hover {
+    background: var(--accent-hover);
+    transform: scale(1.03);
+  }
+
+  .zen-exit-btn kbd {
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--paper);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+  }
+</style>
